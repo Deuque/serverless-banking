@@ -23,6 +23,7 @@ var (
 	ErrInvalidCreateUserRequest  = "Invalid user request"
 	ErrInvalidFundAccountRequest = "Invalid fund account request"
 	ErrNotImplemented            = "Not implemented"
+	ErrInvalidRecipient          = "Sender and recipient email cannot be same"
 	MsgTransactionSuccessful     = "Transaction successful"
 	MsgFundingSuccessful         = "Account Funding successful"
 )
@@ -110,6 +111,9 @@ func (bh BankingHandler) Transfer(req events.APIGatewayV2HTTPRequest) (*events.A
 	}
 	if transferReq.Amount <= 0 {
 		return apiResponse(http.StatusBadRequest, wrapMessage(ErrInvalidAmount)), nil
+	}
+	if transferReq.SenderEmail == transferReq.RecipientEmail {
+		return apiResponse(http.StatusBadRequest, wrapMessage(ErrInvalidRecipient)), nil
 	}
 
 	err = repo.TransferToAccount(transferReq.SenderEmail, transferReq.RecipientEmail, transferReq.Amount, bh.UsersTableName, bh.DynaClient)
